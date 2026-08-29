@@ -149,20 +149,41 @@ export async function reviseArticle(
     task.prompt,
   );
   const targetRule = targetBlockId
-    ? `只允许修改 id=${targetBlockId} 的区块，其他区块必须逐字、逐字段保持不变。`
-    : "仅修改指令明确涉及的区块，其他内容保持不变。";
+    ? `只允许修改 id=${targetBlockId} 的区块，其他区块以及 title/subtitle 字段必须逐字、逐字段保持不变。`
+    : "仅修改指令明确涉及的字段或区块，其他内容保持不变。";
   const result = await chat<{ document: ArticleDocument }>([
     {
       role: "system",
-      content: `${editorialPrompt}\n你是微信公众号文章的精准修订助手。${targetRule} 不得改变事实。只输出JSON对象 {"document": 完整文档}。保留所有区块id；除非指令明确要求增删结构，否则不得添加或删除区块。style允许 color、fontSize、fontWeight、textAlign、backgroundColor。`,
+      content: `${editorialPrompt}\n你是微信公众号文章的精准修订助手。${targetRule} 不得改变事实。只输出JSON对象 {"document": 完整文档}。保留所有区块id；除非指令明确要求增删结构，否则不得添加或删除区块。style允许 color、fontSize、fontWeight、textAlign、backgroundColor。\n特别注意：文章主标题存储在 document.title，副标题存储在 document.subtitle，它们不是 blocks 里的区块。当用户要求修改、重写或删除标题/副标题/题目时，必须直接修改这两个字段；删除时应把对应字段设为空字符串。`,
     },
     {
       role: "user",
-      content: `用户指令：${instruction}\n当前文档：${JSON.stringify(task.document)}`,
+      content: `用户指令：${instruction}\n当前文档：${JSON.stringify(task.document)}\n\n请先判断用户指令是否涉及“标题/大标题/题目/副标题/导语题头”。如果涉及，必须修改 document.title 或 document.subtitle，不能只改 blocks。若用户要求删除标题，将对应字段设为空字符串。`,
     },
   ]);
-  result.document.templateId = task.document.templateId;
-  return result.document;
+  const original = task.document;
+  const next = result.document;
+  const document: ArticleDocument = {
+    ...next,
+    title:
+      typeof next.title === "string" ? next.title : original.title,
+    subtitle:
+      typeof next.subtitle === "string" ? next.subtitle : original.subtitle,
+    templateId: original.templateId,
+    blocks: Array.isArray(next.blocks) ? next.blocks : original.blocks,
+  };
+
+  if (!targetBlockId) {
+    const deleteTitlePattern =
+      /(?:删除|删掉|去掉|移除|取消|清空|不要)(?:这个|上面的|下方的|当前)?\s*(?:主)?标题(?![和及与])|(?:主)?标题\s*(?:删除|删掉|去掉|移除|取消|清空)/u;
+    const deleteSubtitlePattern =
+      /(?:删除|删掉|去掉|移除|取消|清空|不要)(?:这个|上面的|下方的|当前)?\s*(?:副标题|导语题头)|(?:副标题|导语题头)\s*(?:删除|删掉|去掉|移除|取消|清空)/u;
+
+    if (deleteTitlePattern.test(instruction)) document.title = "";
+    if (deleteSubtitlePattern.test(instruction)) document.subtitle = "";
+  }
+
+  return document;
 }
 
 export function fallbackRecommendations(): Recommendation[] {

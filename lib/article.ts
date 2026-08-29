@@ -36,28 +36,61 @@ function styleString(style?: ArticleBlock["style"]) {
 function headerHtml(document: ArticleDocument, template: ArticleTemplate) {
   const { theme, layout, motif, category } = template;
   const title = escapeHtml(document.title);
-  const subtitle = document.subtitle
-    ? escapeHtml(document.subtitle)
-    : "记录现场 · 连接专业 · 看见改变";
+  const subtitle = escapeHtml(
+    document.subtitle === undefined
+      ? "记录现场 · 连接专业 · 看见改变"
+      : document.subtitle,
+  );
+
+  const titleMarkup = title
+    ? {
+        poster: `<h1 style="margin:0;font-family:${theme.headingFont};font-size:31px;line-height:1.35;font-weight:800;">${title}</h1>`,
+        workshop: `<h1 style="margin:0;font-family:${theme.headingFont};font-size:28px;line-height:1.45;color:${theme.primary};">${title}</h1>`,
+        youth: `<h1 style="margin:0;font-size:30px;line-height:1.4;color:${theme.text};">${title}</h1>`,
+        blueprint: `<h1 style="margin:0;font-size:29px;line-height:1.4;color:${theme.text};">${title}</h1>`,
+        notebook: `<h1 style="margin:0;font-family:${theme.headingFont};font-size:28px;line-height:1.45;color:${theme.text};"><span style="box-shadow:inset 0 -.48em 0 ${theme.accent};">${title}</span></h1>`,
+        award: `<h1 style="margin:0;font-family:${theme.headingFont};font-size:30px;line-height:1.45;color:#fff8e9;">${title}</h1>`,
+        dossier: `<h1 style="margin:0;font-size:28px;line-height:1.45;color:${theme.text};">${title}</h1>`,
+        magazine: `<h1 style="margin:0;max-width:92%;font-family:${theme.headingFont};font-size:35px;line-height:1.3;color:${theme.primary};font-weight:700;">${title}</h1>`,
+        timeline: `<h1 style="margin:0;font-family:${theme.headingFont};font-size:29px;line-height:1.4;">${title}</h1>`,
+        gallery: `<h1 style="margin:0;font-size:31px;line-height:1.38;">${title}</h1>`,
+      }[layout]
+    : "";
+
+  const subtitleMarkup = subtitle
+    ? {
+        poster: `<p style="margin:25px 0 0;padding-top:14px;border-top:1px solid ${theme.accent};font-size:14px;line-height:1.7;color:${theme.secondary};">${subtitle}</p>`,
+        workshop: `<p style="margin:14px auto 0;max-width:80%;font-size:14px;line-height:1.8;color:${theme.muted};">${subtitle}</p>`,
+        youth: `<p style="margin:18px 0 0;font-size:14px;line-height:1.8;color:${theme.primary};">◌ ${subtitle}</p>`,
+        blueprint: `<p style="margin:18px 0 0;padding-top:12px;border-top:1px dashed ${theme.primary};font-size:14px;line-height:1.75;color:${theme.muted};">${subtitle}</p>`,
+        notebook: `<p style="margin:18px 0 0;font-size:14px;line-height:1.8;color:${theme.muted};">${subtitle}</p>`,
+        award: `<p style="margin:19px 0 0;font-size:14px;line-height:1.75;color:${theme.secondary};">${subtitle}</p>`,
+        dossier: `<p style="margin:18px 0 0;font-size:14px;line-height:1.8;color:${theme.muted};">档案摘要｜${subtitle}</p>`,
+        magazine: `<p style="margin:21px 0 0 18%;padding-left:14px;border-left:3px solid ${theme.accent};font-size:14px;line-height:1.85;color:${theme.muted};">${subtitle}</p>`,
+        timeline: `<p style="margin:17px 0 0;font-size:14px;line-height:1.8;color:${theme.secondary};">${subtitle}</p>`,
+        gallery: `<p style="margin:19px 0 0;font-size:14px;line-height:1.8;color:${theme.secondary};">${subtitle}</p>`,
+      }[layout]
+    : "";
+
   if (layout === "poster")
-    return `<header style="margin:-28px -22px 34px;padding:48px 25px 38px;background:${theme.primary};color:#fff;position:relative;"><p style="margin:0 0 28px;font-size:12px;letter-spacing:.2em;color:${theme.accent};">EVENT / ${motif}</p><h1 style="margin:0;font-family:${theme.headingFont};font-size:31px;line-height:1.35;font-weight:800;">${title}</h1><p style="margin:25px 0 0;padding-top:14px;border-top:1px solid ${theme.accent};font-size:14px;line-height:1.7;color:${theme.secondary};">${subtitle}</p></header>`;
+    return `<header style="margin:-28px -22px 34px;padding:48px 25px 38px;background:${theme.primary};color:#fff;position:relative;"><p style="margin:0 0 28px;font-size:12px;letter-spacing:.2em;color:${theme.accent};">EVENT / ${motif}</p>${titleMarkup}${subtitleMarkup}</header>`;
   if (layout === "workshop")
-    return `<header style="margin:0 0 34px;text-align:center;"><p style="display:inline-block;margin:0 0 16px;padding:5px 14px;border-top:2px solid ${theme.accent};border-bottom:2px solid ${theme.accent};font-size:11px;letter-spacing:.18em;color:${theme.primary};">WORKSHOP ${motif}</p><h1 style="margin:0;font-family:${theme.headingFont};font-size:28px;line-height:1.45;color:${theme.primary};">${title}</h1><p style="margin:14px auto 0;max-width:80%;font-size:14px;line-height:1.8;color:${theme.muted};">${subtitle}</p></header>`;
+    return `<header style="margin:0 0 34px;text-align:center;"><p style="display:inline-block;margin:0 0 16px;padding:5px 14px;border-top:2px solid ${theme.accent};border-bottom:2px solid ${theme.accent};font-size:11px;letter-spacing:.18em;color:${theme.primary};">WORKSHOP ${motif}</p>${titleMarkup}${subtitleMarkup}</header>`;
   if (layout === "youth")
-    return `<header style="margin:-8px 0 38px;padding:31px 23px;background:${theme.secondary};border-radius:22px 6px 22px 6px;box-shadow:8px 8px 0 ${theme.accent};"><p style="margin:0 0 12px;font-weight:700;letter-spacing:.16em;color:${theme.primary};">GROWING · ${motif}</p><h1 style="margin:0;font-size:30px;line-height:1.4;color:${theme.text};">${title}</h1><p style="margin:18px 0 0;font-size:14px;line-height:1.8;color:${theme.primary};">◌ ${subtitle}</p></header>`;
+    return `<header style="margin:-8px 0 38px;padding:31px 23px;background:${theme.secondary};border-radius:22px 6px 22px 6px;box-shadow:8px 8px 0 ${theme.accent};"><p style="margin:0 0 12px;font-weight:700;letter-spacing:.16em;color:${theme.primary};">GROWING · ${motif}</p>${titleMarkup}${subtitleMarkup}</header>`;
   if (layout === "blueprint")
-    return `<header style="margin:-8px 0 34px;padding:28px 23px;border:2px solid ${theme.primary};background:${theme.secondary};box-shadow:7px 7px 0 ${theme.accent};"><p style="margin:0 0 16px;font-size:11px;letter-spacing:.16em;color:${theme.primary};">PROJECT BLUEPRINT / ${motif}</p><h1 style="margin:0;font-size:29px;line-height:1.4;color:${theme.text};">${title}</h1><p style="margin:18px 0 0;padding-top:12px;border-top:1px dashed ${theme.primary};font-size:14px;line-height:1.75;color:${theme.muted};">${subtitle}</p></header>`;
+    return `<header style="margin:-8px 0 34px;padding:28px 23px;border:2px solid ${theme.primary};background:${theme.secondary};box-shadow:7px 7px 0 ${theme.accent};"><p style="margin:0 0 16px;font-size:11px;letter-spacing:.16em;color:${theme.primary};">PROJECT BLUEPRINT / ${motif}</p>${titleMarkup}${subtitleMarkup}</header>`;
   if (layout === "notebook")
-    return `<header style="margin:0 0 36px;padding:25px 22px;background:${theme.secondary};border-top:9px solid ${theme.accent};box-shadow:0 5px 14px rgba(53,77,87,.12);transform:rotate(-.35deg);"><p style="margin:0 0 13px;font-size:12px;letter-spacing:.12em;color:${theme.primary};">FIELD NOTES · ${motif}</p><h1 style="margin:0;font-family:${theme.headingFont};font-size:28px;line-height:1.45;color:${theme.text};"><span style="box-shadow:inset 0 -.48em 0 ${theme.accent};">${title}</span></h1><p style="margin:18px 0 0;font-size:14px;line-height:1.8;color:${theme.muted};">${subtitle}</p></header>`;
+    return `<header style="margin:0 0 36px;padding:25px 22px;background:${theme.secondary};border-top:9px solid ${theme.accent};box-shadow:0 5px 14px rgba(53,77,87,.12);transform:rotate(-.35deg);"><p style="margin:0 0 13px;font-size:12px;letter-spacing:.12em;color:${theme.primary};">FIELD NOTES · ${motif}</p>${titleMarkup}${subtitleMarkup}</header>`;
   if (layout === "award")
-    return `<header style="margin:-28px -22px 36px;padding:42px 24px;background:${theme.primary};text-align:center;border-bottom:8px solid ${theme.accent};"><p style="margin:0 auto 18px;width:56px;height:56px;line-height:56px;border:1px solid ${theme.accent};border-radius:50%;font-family:${theme.headingFont};font-size:18px;color:${theme.accent};">喜报</p><p style="margin:0 0 12px;font-size:11px;letter-spacing:.28em;color:${theme.accent};">HONOR · ${motif}</p><h1 style="margin:0;font-family:${theme.headingFont};font-size:30px;line-height:1.45;color:#fff8e9;">${title}</h1><p style="margin:19px 0 0;font-size:14px;line-height:1.75;color:${theme.secondary};">${subtitle}</p></header>`;
+    return `<header style="margin:-28px -22px 36px;padding:42px 24px;background:${theme.primary};text-align:center;border-bottom:8px solid ${theme.accent};"><p style="margin:0 auto 18px;width:56px;height:56px;line-height:56px;border:1px solid ${theme.accent};border-radius:50%;font-family:${theme.headingFont};font-size:18px;color:${theme.accent};">喜报</p><p style="margin:0 0 12px;font-size:11px;letter-spacing:.28em;color:${theme.accent};">HONOR · ${motif}</p>${titleMarkup}${subtitleMarkup}</header>`;
   if (layout === "dossier")
-    return `<header style="margin:0 0 36px;padding:26px 24px;border:1px solid ${theme.accent};border-radius:16px;background:${theme.secondary};"><p style="margin:0 0 20px;padding-bottom:10px;border-bottom:1px solid ${theme.accent};font-size:11px;letter-spacing:.15em;color:${theme.primary};">CASE FILE / NO.${motif}</p><h1 style="margin:0;font-size:28px;line-height:1.45;color:${theme.text};">${title}</h1><p style="margin:18px 0 0;font-size:14px;line-height:1.8;color:${theme.muted};">档案摘要｜${subtitle}</p></header>`;
+    return `<header style="margin:0 0 36px;padding:26px 24px;border:1px solid ${theme.accent};border-radius:16px;background:${theme.secondary};"><p style="margin:0 0 20px;padding-bottom:10px;border-bottom:1px solid ${theme.accent};font-size:11px;letter-spacing:.15em;color:${theme.primary};">CASE FILE / NO.${motif}</p>${titleMarkup}${subtitleMarkup}</header>`;
   if (layout === "magazine")
-    return `<header style="margin:0 0 42px;"><p style="margin:0 0 30px;padding-bottom:8px;border-bottom:4px solid ${theme.primary};font-size:12px;letter-spacing:.3em;color:${theme.primary};">${category.toUpperCase()} / ISSUE ${motif}</p><h1 style="margin:0;max-width:92%;font-family:${theme.headingFont};font-size:35px;line-height:1.3;color:${theme.primary};font-weight:700;">${title}</h1><p style="margin:21px 0 0 18%;padding-left:14px;border-left:3px solid ${theme.accent};font-size:14px;line-height:1.85;color:${theme.muted};">${subtitle}</p></header>`;
+    return `<header style="margin:0 0 42px;"><p style="margin:0 0 30px;padding-bottom:8px;border-bottom:4px solid ${theme.primary};font-size:12px;letter-spacing:.3em;color:${theme.primary};">${category.toUpperCase()} / ISSUE ${motif}</p>${titleMarkup}${subtitleMarkup}</header>`;
   if (layout === "timeline")
-    return `<header style="margin:0 0 38px;padding:28px 23px;border-radius:10px 10px 40px 10px;background:${theme.primary};color:white;"><p style="margin:0 0 20px;font-size:12px;letter-spacing:.18em;color:${theme.accent};">JOURNEY / ${motif}</p><h1 style="margin:0;font-family:${theme.headingFont};font-size:29px;line-height:1.4;">${title}</h1><p style="margin:17px 0 0;font-size:14px;line-height:1.8;color:${theme.secondary};">${subtitle}</p></header>`;
-  return `<header style="margin:-28px -22px 38px;padding:50px 25px 36px;background:${theme.primary};color:white;"><p style="margin:0 0 52px;font-size:11px;letter-spacing:.24em;color:${theme.accent};">FIELD RECORD / FRAME ${motif}</p><h1 style="margin:0;font-size:31px;line-height:1.38;">${title}</h1><p style="margin:19px 0 0;font-size:14px;line-height:1.8;color:${theme.secondary};">${subtitle}</p></header>`;
+    return `<header style="margin:0 0 38px;padding:28px 23px;border-radius:10px 10px 40px 10px;background:${theme.primary};color:white;"><p style="margin:0 0 20px;font-size:12px;letter-spacing:.18em;color:${theme.accent};">JOURNEY / ${motif}</p>${titleMarkup}${subtitleMarkup}</header>`;
+  return `<header style="margin:-28px -22px 38px;padding:50px 25px 36px;background:${theme.primary};color:white;"><p style="margin:0 0 52px;font-size:11px;letter-spacing:.24em;color:${theme.accent};">FIELD RECORD / FRAME ${motif}</p>${titleMarkup}${subtitleMarkup}</header>`;
 }
 
 function headingHtml(

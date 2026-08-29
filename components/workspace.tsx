@@ -71,6 +71,45 @@ function formatTime(value: string) {
   return `${date.getMonth() + 1}月${date.getDate()}日`;
 }
 
+function copyHtmlWithExecCommand(html: string) {
+  try {
+    const container = document.createElement("div");
+    container.contentEditable = "true";
+    container.style.position = "fixed";
+    container.style.left = "-9999px";
+    container.innerHTML = html;
+    document.body.appendChild(container);
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(container);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    const copied = document.execCommand("copy");
+    selection?.removeAllRanges();
+    document.body.removeChild(container);
+    return copied;
+  } catch {
+    return false;
+  }
+}
+
+function copyPlainTextWithExecCommand(text: string) {
+  try {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.select();
+    const copied = document.execCommand("copy");
+    document.body.removeChild(textarea);
+    return copied;
+  } catch {
+    return false;
+  }
+}
+
 function TaskLogo({ index }: { index: number }) {
   const shapes = ["圆", "角", "线", "方"];
   return (
@@ -700,25 +739,33 @@ function Editor({
   }
 
   async function copyRichText() {
-    try {
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          "text/html": new Blob([html], { type: "text/html" }),
-          "text/plain": new Blob(
-            [
-              task.document?.blocks.map((b) => b.content || "").join("\n") ||
-                "",
-            ],
-            { type: "text/plain" },
-          ),
-        }),
-      ]);
+    const plain = task.document?.blocks.map((b) => b.content || "").join("\n") ||
+      "";
+
+    if (
+      typeof navigator.clipboard?.write === "function" &&
+      typeof ClipboardItem === "function"
+    ) {
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            "text/html": new Blob([html], { type: "text/html" }),
+            "text/plain": new Blob([plain], { type: "text/plain" }),
+          }),
+        ]);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1600);
+        return;
+      } catch {
+        // Clipboard API 可能因权限或不安全上下文失败，继续走 execCommand 兜底。
+      }
+    }
+
+    const copied = copyHtmlWithExecCommand(html) ||
+      copyPlainTextWithExecCommand(plain);
+    if (copied) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
-    } catch {
-      await navigator.clipboard.writeText(
-        task.document?.blocks.map((b) => b.content || "").join("\n") || "",
-      );
     }
   }
 
