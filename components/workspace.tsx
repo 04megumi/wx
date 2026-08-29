@@ -741,6 +741,15 @@ function Editor({
   async function copyRichText() {
     const plain = task.document?.blocks.map((b) => b.content || "").join("\n") ||
       "";
+    const assetUrls = Object.fromEntries(
+      task.assets.map((asset) => [
+        asset.id,
+        `${window.location.origin}/api/tasks/${task.id}/assets/${asset.id}`,
+      ]),
+    );
+    const copyHtml = task.document
+      ? renderArticleHtml(task.document, task, assetUrls)
+      : html;
 
     if (
       typeof navigator.clipboard?.write === "function" &&
@@ -749,7 +758,7 @@ function Editor({
       try {
         await navigator.clipboard.write([
           new ClipboardItem({
-            "text/html": new Blob([html], { type: "text/html" }),
+            "text/html": new Blob([copyHtml], { type: "text/html" }),
             "text/plain": new Blob([plain], { type: "text/plain" }),
           }),
         ]);
@@ -761,7 +770,7 @@ function Editor({
       }
     }
 
-    const copied = copyHtmlWithExecCommand(html) ||
+    const copied = copyHtmlWithExecCommand(copyHtml) ||
       copyPlainTextWithExecCommand(plain);
     if (copied) {
       setCopied(true);
