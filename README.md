@@ -26,6 +26,8 @@ npm run dev
 
 访问 <http://localhost:3000>。
 
+如需从公网 IP 或域名远程访问开发服务器，请运行 `npm run dev -- -H 0.0.0.0`，并在 `.env.local` 中设置 `ALLOWED_DEV_ORIGINS`（多个来源用英文逗号分隔）。当前已默认允许 `43.139.202.189`。
+
 环境变量参考 `.env.example`。真实密钥请放在 `.env.local`，该文件已被 `.gitignore` 排除。
 
 ZIP 默认上限为 1GB（`1024MB`），可通过 `MAX_UPLOAD_MB` 调整。当前 MVP 会将 ZIP 读入服务端内存，超大文件可能占用数倍内存；正式部署必须改为对象存储分片直传和后台异步解压。
