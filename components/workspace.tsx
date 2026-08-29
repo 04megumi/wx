@@ -32,6 +32,7 @@ import { renderArticleHtml } from "@/lib/article";
 import { defaultPrompt, getTemplate, templates } from "@/lib/templates";
 import {
   ArticleBlock,
+  Asset,
   TaskStatus,
   WorkflowTask,
   WorkspaceSettings,
@@ -108,6 +109,65 @@ function copyPlainTextWithExecCommand(text: string) {
   } catch {
     return false;
   }
+}
+
+const wechatImageMime = new Set(["image/jpeg", "image/png", "image/gif"]);
+const wechatClipboardImageLimit = 8 * 1024 * 1024;
+
+function blobToDataUrl(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error || new Error("图片读取失败"));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function loadImageFromBlob(blob: Blob) {
+  const url = URL.createObjectURL(blob);
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("图片解码失败"));
+    };
+    image.src = url;
+  });
+}
+
+async function assetToWechatDataUrl(asset: Asset, taskId: string) {
+  const response = await fetch(`/api/tasks/${taskId}/assets/${asset.id}`);
+  if (!response.ok) throw new Error(`图片读取失败（${response.status}）`);
+  const blob = await response.blob();
+  const mime = blob.type || asset.mime;
+
+  if (
+    wechatImageMime.has(mime) &&
+    blob.size <= wechatClipboardImageLimit
+  ) {
+    return blobToDataUrl(blob);
+  }
+
+  const image = await loadImageFromBlob(blob);
+  const maxWidth = 1600;
+  const longest = Math.max(image.naturalWidth, image.naturalHeight);
+  const scale = Math.min(1, maxWidth / longest);
+  const width = Math.max(1, Math.round(image.naturalWidth * scale));
+  const height = Math.max(1, Math.round(image.naturalHeight * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) return blobToDataUrl(blob);
+
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, width, height);
+  context.drawImage(image, 0, 0, width, height);
+  return canvas.toDataURL("image/jpeg", 0.82);
 }
 
 function TaskLogo({ index }: { index: number }) {
@@ -719,6 +779,7 @@ function Editor({
   >();
   const [instruction, setInstruction] = useState("");
   const [copied, setCopied] = useState(false);
+  const [copying, setCopying] = useState(false);
   const html = useMemo(
     () => (task.document ? renderArticleHtml(task.document, task) : ""),
     [task],
@@ -739,42 +800,66 @@ function Editor({
   }
 
   async function copyRichText() {
-    const plain = task.document?.blocks.map((b) => b.content || "").join("\n") ||
-      "";
-    const assetUrls = Object.fromEntries(
-      task.assets.map((asset) => [
-        asset.id,
-        `${window.location.origin}/api/tasks/${task.id}/assets/${asset.id}`,
-      ]),
-    );
-    const copyHtml = task.document
-      ? renderArticleHtml(task.document, task, assetUrls)
-      : html;
+    if (copying) return;
+    setCopying(true);
+    setCopied(false);
 
-    if (
-      typeof navigator.clipboard?.write === "function" &&
-      typeof ClipboardItem === "function"
-    ) {
-      try {
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            "text/html": new Blob([copyHtml], { type: "text/html" }),
-            "text/plain": new Blob([plain], { type: "text/plain" }),
-          }),
-        ]);
+    try {
+      const plain = task.document?.blocks
+        .map((b) => b.content || "")
+        .join("\n") || "";
+      const usedAssetIds = Array.from(
+        new Set(
+          (task.document?.blocks || [])
+            .filter(
+              (block) => block.type === "image" && Boolean(block.assetId),
+            )
+            .map((block) => block.assetId as string),
+        ),
+      );
+      const assetUrls: Record<string, string> = {};
+      await Promise.all(
+        usedAssetIds.map(async (assetId) => {
+          const asset = task.assets.find((item) => item.id === assetId);
+          if (!asset) return;
+          try {
+            assetUrls[assetId] = await assetToWechatDataUrl(asset, task.id);
+          } catch {
+            assetUrls[assetId] = `${window.location.origin}/api/tasks/${task.id}/assets/${asset.id}`;
+          }
+        }),
+      );
+      const copyHtml = task.document
+        ? renderArticleHtml(task.document, task, assetUrls)
+        : html;
+
+      if (
+        typeof navigator.clipboard?.write === "function" &&
+        typeof ClipboardItem === "function"
+      ) {
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              "text/html": new Blob([copyHtml], { type: "text/html" }),
+              "text/plain": new Blob([plain], { type: "text/plain" }),
+            }),
+          ]);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1600);
+          return;
+        } catch {
+          // Clipboard API 可能因权限或不安全上下文失败，继续走 execCommand 兜底。
+        }
+      }
+
+      const copied = copyHtmlWithExecCommand(copyHtml) ||
+        copyPlainTextWithExecCommand(plain);
+      if (copied) {
         setCopied(true);
         setTimeout(() => setCopied(false), 1600);
-        return;
-      } catch {
-        // Clipboard API 可能因权限或不安全上下文失败，继续走 execCommand 兜底。
       }
-    }
-
-    const copied = copyHtmlWithExecCommand(copyHtml) ||
-      copyPlainTextWithExecCommand(plain);
-    if (copied) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1600);
+    } finally {
+      setCopying(false);
     }
   }
 
@@ -947,9 +1032,19 @@ function Editor({
         </div>
         <p className="ai-hint">AI 可能犯错，事实与最终样式请人工确认</p>
         <div className="export-area">
-          <button className="button soft" onClick={copyRichText}>
-            {copied ? <Check size={15} /> : <Copy size={15} />}
-            {copied ? "已复制" : "复制微信富文本"}
+          <button
+            className="button soft"
+            disabled={copying}
+            onClick={copyRichText}
+          >
+            {copying ? (
+              <LoaderCircle className="spin" size={15} />
+            ) : copied ? (
+              <Check size={15} />
+            ) : (
+              <Copy size={15} />
+            )}
+            {copying ? "正在复制…" : copied ? "已复制" : "复制微信富文本"}
           </button>
           <a className="button ghost" href={`/api/tasks/${task.id}/export`}>
             <Download size={15} />
