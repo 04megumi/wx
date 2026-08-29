@@ -1,0 +1,1517 @@
+:root {
+  --ink: #202321;
+  --muted: #7b807c;
+  --line: #e8e8e3;
+  --paper: #fbfbf8;
+  --green: #315f50;
+  --green-dark: #284d42;
+  --green-pale: #e9f0ec;
+  --cream: #f3f1ea;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+}
+button,
+input,
+textarea {
+  font: inherit;
+}
+button {
+  color: inherit;
+}
+.app-shell {
+  display: flex;
+  height: 100vh;
+  min-width: 1080px;
+  overflow: hidden;
+}
+.sidebar {
+  width: 244px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 14px 14px;
+  border-right: 1px solid var(--line);
+  background: #f5f5f1;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 9px 23px;
+}
+.brand-mark {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--green);
+  color: white;
+  font:
+    18px "Songti SC",
+    serif;
+  box-shadow: 0 6px 15px #315f5025;
+}
+.brand div {
+  display: flex;
+  flex-direction: column;
+}
+.brand strong {
+  font:
+    19px "Songti SC",
+    serif;
+  letter-spacing: 0.08em;
+}
+.brand small {
+  margin-top: 2px;
+  color: #8b918d;
+  font-size: 8px;
+  letter-spacing: 0.17em;
+}
+.button {
+  border: 0;
+  border-radius: 8px;
+  min-height: 38px;
+  padding: 0 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: 0.18s ease;
+}
+.button:hover {
+  transform: translateY(-1px);
+}
+.button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+  transform: none;
+}
+.button.primary {
+  background: var(--green);
+  color: #fff;
+  box-shadow: 0 5px 14px #315f5026;
+}
+.button.primary:hover {
+  background: var(--green-dark);
+}
+.button.ghost {
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.button.soft {
+  background: var(--green-pale);
+  color: var(--green);
+}
+.button.large {
+  min-height: 45px;
+  padding: 0 21px;
+}
+.button.compact {
+  min-height: 32px;
+  padding: 0 12px;
+}
+.button.full {
+  width: 100%;
+}
+.new-task {
+  width: 100%;
+  margin-bottom: 15px;
+}
+.search {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #9a9e9b;
+  background: #ecece8;
+}
+.search:focus-within {
+  background: #fff;
+  border-color: #d8ddd9;
+}
+.search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 12px;
+}
+.nav-label {
+  display: flex;
+  justify-content: space-between;
+  padding: 22px 8px 9px;
+  color: #949995;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.nav-label small {
+  font-size: 10px;
+}
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow-y: auto;
+}
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.task-row:hover {
+  background: #ecece7;
+}
+.task-row.active {
+  background: #fff;
+  box-shadow: 0 2px 8px #23282009;
+}
+.task-logo {
+  display: grid;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 7px;
+  font:
+    13px "Songti SC",
+    serif;
+}
+.logo-0 {
+  background: #e9eee7;
+  color: #506a50;
+}
+.logo-1 {
+  background: #f2e8df;
+  color: #96664a;
+}
+.logo-2 {
+  background: #e7ebef;
+  color: #50667a;
+}
+.logo-3 {
+  background: #eee8ef;
+  color: #795a80;
+}
+.task-row > span:last-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.task-row strong {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.task-row small {
+  display: flex;
+  align-items: center;
+  color: #999e9a;
+  font-size: 9px;
+  white-space: nowrap;
+}
+.status-dot {
+  width: 5px;
+  height: 5px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: #b7bbb8;
+}
+.step-3,
+.step-4 {
+  background: #bf8c4d;
+}
+.step-5 {
+  background: #547b70;
+}
+.step-6 {
+  background: #5b8865;
+}
+.list-loading {
+  padding: 18px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.sidebar-footer > button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 9px;
+  padding: 8px;
+  border: 0;
+  background: transparent;
+  color: #747a76;
+  font-size: 11px;
+  cursor: pointer;
+}
+.user {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 10px;
+  padding: 10px 8px 3px;
+}
+.user > span {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  place-items: center;
+  border-radius: 50%;
+  background: #ddd8cd;
+  font: 12px serif;
+}
+.user div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+.user strong {
+  font-size: 11px;
+}
+.user small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 9px;
+}
+.workspace {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #fafaf7;
+}
+.topbar {
+  height: 64px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 23px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+.task-heading {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.task-heading span {
+  color: var(--green);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.task-heading input {
+  width: 440px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font:
+    16px "Songti SC",
+    serif;
+  font-weight: 700;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.saved {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 7px;
+  color: #8c918e;
+  font-size: 10px;
+}
+.top-empty {
+  display: flex;
+  flex-direction: column;
+}
+.top-empty span {
+  font:
+    15px "Songti SC",
+    serif;
+  font-weight: 700;
+}
+.top-empty small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 9px;
+}
+.icon-button {
+  display: inline-grid;
+  width: 33px;
+  height: 33px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+.icon-button:hover {
+  background: #f5f5f1;
+}
+.icon-button.danger:hover {
+  border-color: #ecd2ce;
+  color: #a54339;
+  background: #fff5f3;
+}
+.empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: 4vh;
+  text-align: center;
+}
+.empty-art {
+  position: relative;
+  width: 170px;
+  height: 138px;
+  margin-bottom: 22px;
+}
+.paper {
+  position: absolute;
+  display: block;
+  width: 92px;
+  height: 118px;
+  border: 1px solid #d9ddd8;
+  border-radius: 3px;
+  background: white;
+  box-shadow: 0 12px 30px #29342d12;
+}
+.paper::before,
+.paper::after {
+  content: "";
+  position: absolute;
+  left: 17px;
+  right: 17px;
+  height: 2px;
+  background: #e7e9e5;
+  box-shadow:
+    0 9px #e7e9e5,
+    0 18px #e7e9e5;
+}
+.paper::before {
+  top: 52px;
+}
+.paper-a {
+  left: 22px;
+  top: 12px;
+  transform: rotate(-10deg);
+}
+.paper-b {
+  right: 21px;
+  top: 10px;
+  transform: rotate(9deg);
+}
+.paper-c {
+  left: 39px;
+  top: 1px;
+  width: 94px;
+  display: grid;
+  place-items: start center;
+  padding-top: 20px;
+  color: var(--green);
+}
+.eyebrow {
+  display: block;
+  margin-bottom: 11px;
+  color: #9a7c50;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+.empty-state h1 {
+  margin: 0;
+  font:
+    42px/1.28 "Songti SC",
+    STSong,
+    serif;
+  letter-spacing: 0.04em;
+}
+.empty-state > p {
+  max-width: 460px;
+  margin: 18px 0 27px;
+  color: #7e837f;
+  font-size: 13px;
+  line-height: 1.9;
+}
+.empty-notes {
+  display: flex;
+  gap: 22px;
+  margin-top: 24px;
+  color: #929793;
+  font-size: 10px;
+}
+.empty-notes span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.modal-backdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #1a211d80;
+  backdrop-filter: blur(5px);
+}
+.modal {
+  width: 560px;
+  padding: 27px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 24px 70px #13201935;
+}
+.modal-heading {
+  display: flex;
+  justify-content: space-between;
+}
+.modal-heading h2 {
+  margin: 0;
+  font:
+    25px "Songti SC",
+    serif;
+}
+.modal-heading p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.dropzone {
+  height: 150px;
+  margin: 24px 0 20px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  border: 1px dashed #c8cec9;
+  border-radius: 10px;
+  background: #fafbf8;
+  color: var(--green);
+  cursor: pointer;
+}
+.dropzone:hover,
+.dropzone.has-file {
+  border-color: #7e9d91;
+  background: #f2f7f4;
+}
+.dropzone strong {
+  color: #343a36;
+  font-size: 13px;
+}
+.dropzone span {
+  color: #8e948f;
+  font-size: 10px;
+}
+.field-label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.field-label span {
+  color: #a5aaa6;
+  font-weight: 400;
+}
+.text-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  outline: 0;
+}
+.text-input:focus,
+.prompt-area:focus {
+  border-color: #8ba69c;
+  box-shadow: 0 0 0 3px #315f500d;
+}
+.prompt-toggle {
+  width: 100%;
+  margin-top: 14px;
+  padding: 8px 1px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: transparent;
+  color: #68706b;
+  font-size: 11px;
+  cursor: pointer;
+}
+.prompt-toggle svg:last-child {
+  margin-left: auto;
+  transition: 0.2s;
+}
+.rotate {
+  transform: rotate(180deg);
+}
+.prompt-area {
+  width: 100%;
+  height: 100px;
+  resize: vertical;
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  outline: 0;
+  font-size: 11px;
+  line-height: 1.65;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 21px;
+}
+.inline-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  color: #a1433b;
+  font-size: 11px;
+}
+.source-page {
+  position: relative;
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(420px, 520px) 450px;
+  gap: 8vw;
+  align-items: center;
+  justify-content: center;
+  padding: 50px;
+  overflow: auto;
+}
+.source-copy h1,
+.page-intro h1 {
+  margin: 0;
+  font:
+    34px/1.3 "Songti SC",
+    serif;
+}
+.source-copy > p,
+.page-intro p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.9;
+}
+.source-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 25px 0 12px;
+}
+.source-stats > div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--green);
+}
+.source-stats span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.source-stats strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.source-stats small {
+  color: var(--muted);
+  font-size: 9px;
+}
+.prompt-card {
+  margin: 12px 0 25px;
+  padding: 15px;
+  border-radius: 8px;
+  background: #f1f0ea;
+}
+.prompt-card > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--green);
+  font-size: 11px;
+}
+.prompt-card p {
+  margin: 8px 0 0;
+  color: #777c78;
+  font-size: 10px;
+  line-height: 1.65;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+.source-preview {
+  position: relative;
+  height: 530px;
+}
+.doc-sheet {
+  position: absolute;
+  z-index: 2;
+  top: 15px;
+  left: 15px;
+  width: 310px;
+  height: 455px;
+  overflow: hidden;
+  padding: 37px 35px;
+  border: 1px solid #e3e1da;
+  background: #fff;
+  box-shadow: 0 18px 45px #31372f1c;
+  transform: rotate(-2deg);
+}
+.doc-sheet > span {
+  color: #a0927d;
+  font-size: 7px;
+  letter-spacing: 0.15em;
+}
+.doc-sheet h3 {
+  margin: 15px 0 20px;
+  font:
+    20px/1.45 "Songti SC",
+    serif;
+}
+.doc-sheet p {
+  margin: 0 0 10px;
+  color: #676b67;
+  font:
+    9px/1.8 "Songti SC",
+    serif;
+}
+.source-image {
+  position: absolute;
+  z-index: 3;
+  width: 145px;
+  height: 105px;
+  object-fit: cover;
+  border: 7px solid #fff;
+  box-shadow: 0 10px 28px #24312924;
+}
+.image-0 {
+  right: 5px;
+  bottom: 38px;
+  transform: rotate(4deg);
+}
+.image-1 {
+  right: 16px;
+  top: 8px;
+  transform: rotate(5deg);
+}
+.image-2 {
+  left: 4px;
+  bottom: 0;
+  transform: rotate(-5deg);
+}
+.template-page {
+  flex: 1;
+  padding: 34px 42px 100px;
+  overflow-y: auto;
+}
+.page-intro {
+  display: flex;
+  justify-content: space-between;
+  max-width: 1180px;
+  margin: 0 auto 27px;
+}
+.text-button {
+  margin: 0 0 14px -3px;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  border: 0;
+  background: none;
+  color: #959a96;
+  font-size: 10px;
+}
+.intro-badge {
+  height: 58px;
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 7px;
+  align-content: center;
+  padding: 0 15px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--green);
+}
+.intro-badge span {
+  font-size: 9px;
+  color: var(--muted);
+}
+.intro-badge strong {
+  grid-column: 2;
+  font-size: 10px;
+}
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(175px, 1fr));
+  gap: 13px;
+  max-width: 1180px;
+  margin: auto;
+}
+.template-card {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.template-card:hover {
+  transform: translateY(-3px);
+  border-color: #b8c7c0;
+  box-shadow: 0 12px 30px #26372e12;
+}
+.template-card.selected {
+  border-color: var(--green);
+  box-shadow:
+    0 0 0 2px #315f5018,
+    0 12px 30px #26372e12;
+}
+.rank {
+  position: absolute;
+  z-index: 2;
+  top: 9px;
+  left: 10px;
+  width: 23px;
+  height: 23px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffffffdb;
+  color: #747b76;
+  font: 8px serif;
+  box-shadow: 0 2px 8px #00000010;
+}
+.selected-mark {
+  position: absolute;
+  z-index: 3;
+  top: 9px;
+  right: 9px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--green);
+  color: white;
+}
+.template-mini {
+  height: 286px;
+  padding: 36px 22px 18px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+}
+.template-mini > span {
+  font-size: 6px;
+  letter-spacing: 0.13em;
+}
+.mini-title {
+  margin: 12px 0 10px;
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+.template-mini > i {
+  display: block;
+  width: 22px;
+  height: 2px;
+  margin-bottom: 13px;
+}
+.template-mini > p {
+  font-size: 7px;
+  line-height: 1.8;
+}
+.mini-callout {
+  margin: 13px 0;
+  padding: 10px;
+  border-left: 2px solid;
+}
+.mini-callout b {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 8px;
+}
+.mini-callout em {
+  display: block;
+  width: 100%;
+  height: 2px;
+  margin-top: 4px;
+  background: #ffffffb8;
+}
+.template-info {
+  padding: 14px;
+}
+.template-info > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+}
+.template-info > div span {
+  color: #959a96;
+}
+.template-info > div b {
+  color: var(--green);
+}
+.template-info h3 {
+  margin: 7px 0;
+  font:
+    15px "Songti SC",
+    serif;
+}
+.template-info p {
+  min-height: 44px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.6;
+}
+.template-tags {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+}
+.template-tags span {
+  padding: 3px 6px;
+  border-radius: 3px;
+  background: #f2f2ee;
+  font-size: 7px;
+}
+.sticky-action {
+  position: fixed;
+  z-index: 5;
+  right: 0;
+  bottom: 0;
+  left: 244px;
+  height: 74px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 35px;
+  border-top: 1px solid var(--line);
+  background: #fffffff0;
+  backdrop-filter: blur(12px);
+}
+.sticky-action > div {
+  display: flex;
+  flex-direction: column;
+}
+.sticky-action span {
+  color: var(--muted);
+  font-size: 8px;
+}
+.sticky-action strong {
+  margin-top: 4px;
+  font:
+    13px "Songti SC",
+    serif;
+}
+.editor-shell {
+  min-height: 0;
+  flex: 1;
+  display: grid;
+  grid-template-columns: 210px minmax(430px, 1fr) 284px;
+  overflow: hidden;
+}
+.outline-panel,
+.ai-panel {
+  min-height: 0;
+  overflow-y: auto;
+  background: #fff;
+}
+.outline-panel {
+  padding: 17px 10px;
+  border-right: 1px solid var(--line);
+}
+.panel-title {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 8px 13px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.panel-title small {
+  color: #9da19e;
+  font-size: 8px;
+  font-weight: 400;
+}
+.outline-item {
+  display: flex;
+  gap: 9px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.outline-item:hover,
+.outline-item.active {
+  background: #f0f4f1;
+}
+.outline-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: #bbc1bd;
+}
+.outline-dot.heading,
+.title-dot {
+  background: var(--green);
+}
+.outline-dot.image {
+  border-radius: 2px;
+  background: #b8905a;
+}
+.outline-dot.lead,
+.outline-dot.callout {
+  background: #7c9288;
+}
+.outline-item > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.outline-item strong {
+  font-size: 9px;
+}
+.outline-item small {
+  overflow: hidden;
+  color: #9a9e9b;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.preview-stage {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #efefeb;
+}
+.preview-toolbar {
+  height: 43px;
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 17px;
+  border-bottom: 1px solid #e0e0db;
+  color: #7c827e;
+  font-size: 9px;
+}
+.preview-toolbar > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.preview-toolbar .icon-button {
+  justify-self: end;
+  width: 27px;
+  height: 27px;
+  background: #f6f6f3;
+}
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #5c8e6c;
+  box-shadow: 0 0 0 3px #5c8e6c15;
+}
+.phone-wrap {
+  position: relative;
+  width: 390px;
+  margin: 22px auto 50px;
+  overflow: visible;
+  border: 1px solid #dcddd8;
+  border-radius: 15px 15px 5px 5px;
+  background: #fff;
+  box-shadow: 0 18px 50px #252c2820;
+}
+.phone-top {
+  height: 38px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid #efefeb;
+  color: #7d827e;
+  font-size: 8px;
+}
+.phone-top b {
+  color: #414642;
+  font-size: 10px;
+}
+.article-preview {
+  overflow: hidden;
+  border-radius: 0 0 5px 5px;
+}
+.article-preview [data-block-id] {
+  position: relative;
+  cursor: pointer;
+  transition:
+    outline 0.15s,
+    background 0.15s;
+}
+.article-preview [data-block-id]:hover {
+  outline: 1px dashed #6d9485;
+  outline-offset: 3px;
+}
+.selection-note {
+  position: sticky;
+  bottom: 10px;
+  z-index: 3;
+  width: max-content;
+  max-width: 330px;
+  margin: -42px auto 11px;
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 20px;
+  background: #203e34e8;
+  color: white;
+  font-size: 8px;
+  backdrop-filter: blur(8px);
+}
+.ai-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 17px 14px 13px;
+  border-left: 1px solid var(--line);
+}
+.ai-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 2px 14px;
+}
+.ai-glyph {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--green-pale);
+  color: var(--green);
+}
+.ai-title div {
+  display: flex;
+  flex-direction: column;
+}
+.ai-title strong {
+  font:
+    13px "Songti SC",
+    serif;
+}
+.ai-title small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 8px;
+}
+.selection-card {
+  padding: 11px;
+  border-radius: 7px;
+  background: #f3f3ef;
+}
+.selection-card > span {
+  color: #999e99;
+  font-size: 7px;
+  letter-spacing: 0.12em;
+}
+.selection-card strong {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 5px;
+  font:
+    10px/1.55 "Songti SC",
+    serif;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.selection-card button {
+  margin-top: 7px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  border: 0;
+  background: none;
+  color: #829089;
+  font-size: 8px;
+  cursor: pointer;
+}
+.chat-history {
+  min-height: 100px;
+  flex: 1;
+  overflow-y: auto;
+  padding: 13px 1px;
+}
+.chat-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  color: #b0b5b1;
+  text-align: center;
+}
+.chat-empty p {
+  max-width: 165px;
+  font-size: 9px;
+  line-height: 1.7;
+}
+.chat-item {
+  display: flex;
+  gap: 7px;
+  margin: 0 0 12px;
+  padding: 9px;
+  border-radius: 7px;
+  background: #f7f7f4;
+  color: var(--green);
+}
+.chat-item p {
+  margin: 0 0 5px;
+  color: #4d544f;
+  font-size: 9px;
+  line-height: 1.55;
+}
+.chat-item span {
+  color: #a1a5a2;
+  font-size: 7px;
+}
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+.quick-actions button {
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: #747a76;
+  font-size: 8px;
+  cursor: pointer;
+}
+.quick-actions button:hover {
+  border-color: #aabdb5;
+  color: var(--green);
+}
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid #dfe2de;
+  border-radius: 9px;
+  background: #fff;
+}
+.composer:focus-within {
+  border-color: #94aa9f;
+  box-shadow: 0 0 0 3px #315f500b;
+}
+.composer textarea {
+  min-height: 52px;
+  max-height: 100px;
+  flex: 1;
+  resize: none;
+  border: 0;
+  outline: 0;
+  font-size: 10px;
+  line-height: 1.55;
+}
+.composer button {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  flex: none;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: var(--green);
+  color: white;
+  cursor: pointer;
+}
+.composer button:disabled {
+  opacity: 0.45;
+}
+.ai-hint {
+  margin: 6px 0 11px;
+  color: #a4a8a5;
+  font-size: 7px;
+  text-align: center;
+}
+.export-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding-top: 11px;
+  border-top: 1px solid var(--line);
+}
+.export-area .button {
+  min-height: 33px;
+  padding: 0 7px;
+  font-size: 9px;
+}
+.export-area .full {
+  grid-column: 1 / -1;
+}
+.theme-sign {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+}
+.theme-sign > span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.theme-sign small {
+  margin-left: 4px;
+  color: #999e9a;
+  font-size: 7px;
+}
+.toast {
+  position: fixed;
+  z-index: 50;
+  bottom: 24px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 15px;
+  border-radius: 8px;
+  background: #213d34;
+  color: white;
+  box-shadow: 0 10px 30px #17251f38;
+  font-size: 11px;
+  animation: toast-in 0.2s ease;
+}
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+@media (max-width: 1250px) {
+  .editor-shell {
+    grid-template-columns: 176px minmax(390px, 1fr) 265px;
+  }
+  .template-page {
+    padding-inline: 24px;
+  }
+  .template-grid {
+    grid-template-columns: repeat(5, minmax(160px, 1fr));
+  }
+  .source-page {
+    gap: 3vw;
+  }
+  .source-preview {
+    transform: scale(0.9);
+  }
+}
+
+/* The article canvas scrolls independently while the workspace chrome remains fixed. */
+.preview-stage {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.preview-toolbar {
+  position: sticky;
+  z-index: 4;
+  top: 0;
+  background: #efefebee;
+  backdrop-filter: blur(10px);
+}
+.phone-wrap {
+  flex: none;
+}
+
+@media (max-width: 760px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  .app-shell {
+    display: block;
+    min-width: 0;
+    height: auto;
+    overflow: visible;
+  }
+
+  .sidebar,
+  .outline-panel {
+    display: none;
+  }
+
+  .workspace {
+    display: block;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    position: sticky;
+    z-index: 8;
+    top: 0;
+    height: 58px;
+    padding: 0 12px;
+  }
+
+  .task-heading input {
+    width: min(58vw, 260px);
+    font-size: 14px;
+  }
+
+  .saved,
+  .top-actions .button {
+    display: none;
+  }
+
+  .editor-shell {
+    display: block;
+    overflow: visible;
+  }
+
+  .preview-stage {
+    display: block;
+    overflow: visible;
+  }
+
+  .preview-toolbar {
+    top: 58px;
+  }
+
+  .phone-wrap {
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .phone-top {
+    display: none;
+  }
+
+  .ai-panel {
+    min-height: 520px;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .source-page {
+    display: block;
+    padding: 36px 20px;
+  }
+
+  .source-preview {
+    display: none;
+  }
+
+  .source-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .template-page {
+    padding: 28px 14px 95px;
+  }
+
+  .page-intro,
+  .template-grid {
+    display: block;
+  }
+
+  .intro-badge {
+    margin-top: 16px;
+  }
+
+  .template-card {
+    width: 100%;
+    margin-bottom: 14px;
+  }
+
+  .sticky-action {
+    left: 0;
+    justify-content: space-between;
+    padding: 0 12px;
+  }
+}
