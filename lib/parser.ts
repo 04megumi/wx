@@ -14,8 +14,20 @@ const mimeMap: Record<string, string> = {
   ".jpeg": "image/jpeg",
   ".png": "image/png",
   ".gif": "image/gif",
-  ".webp": "image/webp"
+  ".webp": "image/webp",
 };
+
+function decodedEntryName(entry: AdmZip.IZipEntry) {
+  const raw = entry.rawEntryName;
+  if (!raw?.length) return entry.entryName;
+  try {
+    return new TextDecoder("utf-8", { fatal: true })
+      .decode(raw)
+      .replaceAll("\\", "/");
+  } catch {
+    return new TextDecoder("gb18030").decode(raw).replaceAll("\\", "/");
+  }
+}
 
 function safeName(name: string) {
   const base = path.basename(name).normalize("NFKC");
@@ -26,7 +38,7 @@ async function saveImage(
   taskId: string,
   name: string,
   buffer: Buffer,
-  source: Asset["source"]
+  source: Asset["source"],
 ): Promise<Asset> {
   const ext = path.extname(name).toLowerCase();
   const id = crypto.randomUUID();
@@ -40,16 +52,19 @@ async function saveImage(
     mime: mimeMap[ext] ?? "application/octet-stream",
     size: buffer.length,
     relativePath: fileName,
-    source
+    source,
   };
 }
 
 export async function parseUpload(taskId: string, file: File) {
   const archiveBuffer = Buffer.from(await file.arrayBuffer());
   const zip = new AdmZip(archiveBuffer);
-  const entries = zip.getEntries().filter((entry) => !entry.isDirectory);
-  const docEntries = entries.filter((entry) =>
-    [".docx", ".txt"].includes(path.extname(entry.entryName).toLowerCase())
+  const entries = zip
+    .getEntries()
+    .filter((entry) => !entry.isDirectory)
+    .map((entry) => ({ entry, name: decodedEntryName(entry) }));
+  const docEntries = entries.filter(({ name }) =>
+    [".docx", ".txt"].includes(path.extname(name).toLowerCase()),
   );
 
   if (!docEntries.length) {
@@ -57,9 +72,9 @@ export async function parseUpload(taskId: string, file: File) {
   }
 
   const source = docEntries[0];
-  const sourceBuffer = source.getData();
+  const sourceBuffer = source.entry.getData();
   let text = "";
-  if (path.extname(source.entryName).toLowerCase() === ".docx") {
+  if (path.extname(source.name).toLowerCase() === ".docx") {
     const result = await mammoth.extractRawText({ buffer: sourceBuffer });
     text = result.value;
   } else {
@@ -73,19 +88,24 @@ export async function parseUpload(taskId: string, file: File) {
   if (!paragraphs.length) throw new Error("文稿内容为空，无法解析正文");
 
   const assets: Asset[] = [];
-  for (const entry of entries) {
-    const ext = path.extname(entry.entryName).toLowerCase();
-    if (imageExtensions.has(ext) && !entry.entryName.startsWith("__MACOSX/")) {
-      assets.push(await saveImage(taskId, entry.entryName, entry.getData(), "zip"));
+  for (const { entry, name } of entries) {
+    const ext = path.extname(name).toLowerCase();
+    if (imageExtensions.has(ext) && !name.startsWith("__MACOSX/")) {
+      assets.push(await saveImage(taskId, name, entry.getData(), "zip"));
     }
   }
 
-  if (!assets.length && path.extname(source.entryName).toLowerCase() === ".docx") {
+  if (!assets.length && path.extname(source.name).toLowerCase() === ".docx") {
     const docxZip = new AdmZip(sourceBuffer);
     for (const entry of docxZip.getEntries()) {
-      const ext = path.extname(entry.entryName).toLowerCase();
-      if (!entry.isDirectory && entry.entryName.startsWith("word/media/") && imageExtensions.has(ext)) {
-        assets.push(await saveImage(taskId, entry.entryName, entry.getData(), "docx"));
+      const name = decodedEntryName(entry);
+      const ext = path.extname(name).toLowerCase();
+      if (
+        !entry.isDirectory &&
+        name.startsWith("word/media/") &&
+        imageExtensions.has(ext)
+      ) {
+        assets.push(await saveImage(taskId, name, entry.getData(), "docx"));
       }
     }
   }
@@ -94,7 +114,7 @@ export async function parseUpload(taskId: string, file: File) {
     title: paragraphs[0].replace(/^[#\s]+/, "").slice(0, 80),
     paragraphs,
     wordCount: text.replace(/\s/g, "").length,
-    sourceDocument: path.basename(source.entryName)
+    sourceDocument: path.basename(source.name),
   };
 
   return { parsed, assets };

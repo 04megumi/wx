@@ -23,9 +23,16 @@ export function taskUploadDir(taskId: string) {
 export async function listTasks(): Promise<WorkflowTask[]> {
   await ensureStore();
   const raw = await fs.readFile(tasksFile, "utf8");
-  return (JSON.parse(raw) as WorkflowTask[]).sort((a, b) =>
-    b.updatedAt.localeCompare(a.updatedAt)
-  );
+  return (JSON.parse(raw) as WorkflowTask[])
+    .map((task) =>
+      task.parsed.sourceDocument.includes("\uFFFD")
+        ? {
+            ...task,
+            parsed: { ...task.parsed, sourceDocument: `${task.name}.docx` },
+          }
+        : task,
+    )
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
 async function writeTasks(tasks: WorkflowTask[]) {
@@ -48,7 +55,7 @@ export async function createTask(task: WorkflowTask) {
 
 export async function updateTask(
   id: string,
-  updater: (task: WorkflowTask) => WorkflowTask
+  updater: (task: WorkflowTask) => WorkflowTask,
 ) {
   const tasks = await listTasks();
   const index = tasks.findIndex((task) => task.id === id);

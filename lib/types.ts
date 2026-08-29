@@ -6,6 +6,10 @@ export type TaskStatus =
   | "editing"
   | "completed";
 
+export type WorkspaceSettings = {
+  globalPrompt: string;
+};
+
 export type Asset = {
   id: string;
   name: string;
@@ -52,11 +56,15 @@ export type Recommendation = {
   templateId: string;
   score: number;
   reason: string;
+  layoutPlan?: string;
+  xiumiKeywords?: string[];
+  referenceIds?: string[];
 };
 
 export type Revision = {
   id: string;
   prompt: string;
+  styleInstruction?: string;
   targetBlockId?: string;
   createdAt: string;
 };
@@ -75,6 +83,7 @@ export type WorkflowTask = {
   createdAt: string;
   updatedAt: string;
   prompt: string;
+  styleInstruction?: string;
   parsed: ParsedContent;
   assets: Asset[];
   recommendations: Recommendation[];
@@ -108,4 +117,18 @@ export type ArticleTemplate = {
   tags: string[];
   theme: TemplateTheme;
   motif: string;
+  layout:
+    | "poster"
+    | "workshop"
+    | "youth"
+    | "blueprint"
+    | "notebook"
+    | "award"
+    | "dossier"
+    | "magazine"
+    | "timeline"
+    | "gallery";
+  structure: string[];
+  xiumiKeywords: string[];
+  referenceIds: string[];
 };

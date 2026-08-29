@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Archive,
   ArrowLeft,
   Check,
   ChevronDown,
@@ -31,7 +30,12 @@ import {
 } from "lucide-react";
 import { renderArticleHtml } from "@/lib/article";
 import { defaultPrompt, getTemplate, templates } from "@/lib/templates";
-import { ArticleBlock, TaskStatus, WorkflowTask } from "@/lib/types";
+import {
+  ArticleBlock,
+  TaskStatus,
+  WorkflowTask,
+  WorkspaceSettings,
+} from "@/lib/types";
 
 const statusMeta: Record<TaskStatus, { label: string; step: number }> = {
   uploaded: { label: "素材已上传", step: 1 },
@@ -79,13 +83,15 @@ function TaskLogo({ index }: { index: number }) {
 function UploadModal({
   onClose,
   onCreated,
+  initialPrompt,
 }: {
   onClose: () => void;
   onCreated: (task: WorkflowTask) => void;
+  initialPrompt: string;
 }) {
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState("");
-  const [prompt, setPrompt] = useState(defaultPrompt);
+  const [prompt, setPrompt] = useState(initialPrompt);
   const [showPrompt, setShowPrompt] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -207,6 +213,95 @@ function UploadModal({
   );
 }
 
+function SettingsModal({
+  prompt,
+  onClose,
+  onSaved,
+}: {
+  prompt: string;
+  onClose: () => void;
+  onSaved: (prompt: string) => void;
+}) {
+  const [draft, setDraft] = useState(prompt);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function save() {
+    if (!draft.trim()) return setError("全局提示词不能为空");
+    setBusy(true);
+    setError("");
+    try {
+      const result = await api<WorkspaceSettings>("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ globalPrompt: draft }),
+      });
+      onSaved(result.globalPrompt);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "保存失败");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div
+      className="modal-backdrop"
+      onMouseDown={(event) => event.target === event.currentTarget && onClose()}
+    >
+      <div className="modal settings-modal">
+        <div className="modal-heading">
+          <div>
+            <span className="eyebrow">GLOBAL SETTINGS</span>
+            <h2>全局生成提示词</h2>
+            <p>该配置会应用于模板匹配、文章生成和后续 AI 修改。</p>
+          </div>
+          <button className="icon-button" onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
+        <textarea
+          className="global-prompt-area"
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+        />
+        <div className="settings-note">
+          <strong>默认排版要求</strong>
+          <span>
+            首行缩进 2 字 · 行距 2 · 字距 0 · 正文 16px · 黑色正文 · END 结尾
+          </span>
+        </div>
+        {error && (
+          <div className="inline-error">
+            <CircleAlert size={15} />
+            {error}
+          </div>
+        )}
+        <div className="modal-actions settings-actions">
+          <button
+            className="button ghost"
+            onClick={() => setDraft(defaultPrompt)}
+          >
+            恢复默认
+          </button>
+          <span />
+          <button className="button ghost" onClick={onClose}>
+            取消
+          </button>
+          <button className="button primary" disabled={busy} onClick={save}>
+            {busy ? (
+              <LoaderCircle className="spin" size={16} />
+            ) : (
+              <Check size={16} />
+            )}
+            {busy ? "保存中" : "保存全局配置"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function EmptyState({ onCreate }: { onCreate: () => void }) {
   return (
     <main className="empty-state">
@@ -298,14 +393,14 @@ function SourceSummary({
         <button
           className="button primary large"
           disabled={busy}
-          onClick={onRecommend}
+          onClick={() => onRecommend()}
         >
           {busy ? (
             <LoaderCircle className="spin" size={17} />
           ) : (
             <WandSparkles size={17} />
           )}
-          {busy ? "AI 正在分析内容" : "匹配 5 个推荐模板"}
+          {busy ? "AI 正在分析内容" : "匹配 10 种结构版式"}
         </button>
       </div>
       <div className="source-preview">
@@ -333,31 +428,45 @@ function TemplateMiniature({ templateId }: { templateId: string }) {
   const template = getTemplate(templateId);
   const { theme } = template;
   return (
-    <div className="template-mini" style={{ background: theme.background }}>
-      <span style={{ color: theme.accent }}>{template.motif} / EDITORIAL</span>
-      <div
-        className="mini-title"
-        style={{ color: theme.primary, fontFamily: theme.headingFont }}
-      >
-        让每一次发生
-        <br />
-        都值得被看见
+    <div
+      className={`template-mini mini-${template.layout}`}
+      style={
+        {
+          background: theme.background,
+          "--mini-primary": theme.primary,
+          "--mini-secondary": theme.secondary,
+          "--mini-accent": theme.accent,
+          "--mini-text": theme.text,
+        } as React.CSSProperties
+      }
+    >
+      <header>
+        <span>
+          {template.motif} / {template.category}
+        </span>
+        <div className="mini-title" style={{ fontFamily: theme.headingFont }}>
+          让每一次发生
+          <br />
+          都值得被看见
+        </div>
+      </header>
+      <div className="mini-body">
+        <div className="mini-heading">
+          <b>01</b>
+          <span>现场与行动</span>
+        </div>
+        <p>以文字记录现场，用影像保存重要时刻。</p>
+        <div className="mini-photo">
+          <i />
+          <small>现场影像</small>
+        </div>
+        <div className="mini-callout">
+          <b>今日看点</b>
+          <em />
+          <em />
+        </div>
+        <p>从细节出发，让内容拥有更清晰的表达。</p>
       </div>
-      <i style={{ background: theme.primary }} />
-      <p style={{ color: theme.text }}>
-        以文字记录现场，用影像保存重要时刻。我们在这里，看见新的故事缓缓展开。
-      </p>
-      <div
-        className="mini-callout"
-        style={{ background: theme.secondary, borderColor: theme.accent }}
-      >
-        <b style={{ color: theme.primary }}>今日看点</b>
-        <em />
-        <em />
-      </div>
-      <p style={{ color: theme.text }}>
-        从细节出发，连接真实的人与事，让内容拥有更清晰的表达。
-      </p>
     </div>
   );
 }
@@ -365,23 +474,47 @@ function TemplateMiniature({ templateId }: { templateId: string }) {
 function TemplatePicker({
   task,
   onSelect,
+  onRematch,
   onGenerate,
   busy,
 }: {
   task: WorkflowTask;
   onSelect: (id: string) => void;
+  onRematch: (styleInstruction: string) => void;
   onGenerate: () => void;
   busy: boolean;
 }) {
-  const candidates = task.recommendations.length
-    ? task.recommendations
-    : templates
-        .slice(0, 5)
-        .map((item, index) => ({
-          templateId: item.id,
-          score: 90 - index * 3,
-          reason: item.description,
-        }));
+  const [styleBrief, setStyleBrief] = useState(task.styleInstruction || "");
+  useEffect(
+    () => setStyleBrief(task.styleInstruction || ""),
+    [task.id, task.styleInstruction],
+  );
+  const savedCandidates = task.recommendations.filter(
+    (recommendation, index, all) =>
+      all.findIndex((item) => item.templateId === recommendation.templateId) ===
+      index,
+  );
+  const candidates = [
+    ...savedCandidates,
+    ...templates
+      .filter(
+        (template) =>
+          !savedCandidates.some(
+            (recommendation) => recommendation.templateId === template.id,
+          ),
+      )
+      .map((item, index) => ({
+        templateId: item.id,
+        score: Math.max(62, 88 - (savedCandidates.length + index) * 3),
+        reason: item.description,
+        layoutPlan: item.structure.join(" → "),
+        xiumiKeywords: item.xiumiKeywords,
+        referenceIds: item.referenceIds,
+      })),
+  ].slice(0, 10);
+  const selectedRecommendation = candidates.find(
+    (candidate) => candidate.templateId === task.selectedTemplateId,
+  );
   return (
     <div className="template-page">
       <div className="page-intro">
@@ -391,7 +524,7 @@ function TemplatePicker({
           </button>
           <span className="eyebrow">STYLE MATCHING</span>
           <h1>为这篇文章选择一种表达</h1>
-          <p>根据内容语气、篇幅与图片数量，AI 为你挑出了这些更合适的版式。</p>
+          <p>10 套候选使用不同结构骨架；AI 负责排序和给出秀米检索方向。</p>
         </div>
         <div className="intro-badge">
           <Sparkles size={15} />
@@ -402,6 +535,55 @@ function TemplatePicker({
           </strong>
         </div>
       </div>
+      <section className="style-director">
+        <div className="style-director-copy">
+          <span>
+            <WandSparkles size={15} /> AI 版式导演
+          </span>
+          <strong>告诉 AI 你想要怎样的版式，而不只是颜色</strong>
+          <p>
+            可描述首屏形式、图片密度、标题组件、正式程度，AI
+            会结合案例库重新排序 10 套结构。
+          </p>
+        </div>
+        <div className="style-director-input">
+          <textarea
+            value={styleBrief}
+            onChange={(event) => setStyleBrief(event.target.value)}
+            placeholder="例如：像专业督导档案，图片少，层级严谨；或更像青少年活动，拍立得图片多一些但不要幼稚。"
+          />
+          <div>
+            <span className="brief-chips">
+              {[
+                "专业长文、低图片密度",
+                "海报感强、突出活动现场",
+                "轻快活泼、图文交错",
+              ].map((brief) => (
+                <button
+                  key={brief}
+                  type="button"
+                  onClick={() => setStyleBrief(brief)}
+                >
+                  {brief}
+                </button>
+              ))}
+            </span>
+            <button
+              type="button"
+              className="button primary compact"
+              disabled={busy || !styleBrief.trim()}
+              onClick={() => onRematch(styleBrief.trim())}
+            >
+              {busy ? (
+                <LoaderCircle className="spin" size={14} />
+              ) : (
+                <Sparkles size={14} />
+              )}
+              AI 重新匹配
+            </button>
+          </div>
+        </div>
+      </section>
       <div className="template-grid">
         {candidates.map((rec, index) => {
           const template = getTemplate(rec.templateId);
@@ -412,7 +594,7 @@ function TemplatePicker({
               className={`template-card ${selected ? "selected" : ""}`}
               onClick={() => onSelect(template.id)}
             >
-              <div className="rank">0{index + 1}</div>
+              <div className="rank">{String(index + 1).padStart(2, "0")}</div>
               <TemplateMiniature templateId={template.id} />
               <div className="template-info">
                 <div>
@@ -421,10 +603,16 @@ function TemplatePicker({
                 </div>
                 <h3>{template.name}</h3>
                 <p>{rec.reason}</p>
+                <small className="layout-plan">
+                  {rec.layoutPlan || template.structure.join(" → ")}
+                </small>
+                <small className="keyword-label">秀米检索词</small>
                 <div className="template-tags">
-                  {template.tags.slice(0, 3).map((tag) => (
-                    <span key={tag}>{tag}</span>
-                  ))}
+                  {(rec.xiumiKeywords || template.xiumiKeywords)
+                    .slice(0, 3)
+                    .map((tag) => (
+                      <span key={tag}>{tag}</span>
+                    ))}
                 </div>
               </div>
               {selected && (
@@ -440,7 +628,19 @@ function TemplatePicker({
         <div>
           <span>已选择</span>
           <strong>{getTemplate(task.selectedTemplateId).name}</strong>
+          <small>
+            {selectedRecommendation?.layoutPlan ||
+              getTemplate(task.selectedTemplateId).structure.join(" → ")}
+          </small>
         </div>
+        <a
+          href="https://xiumi.us/"
+          target="_blank"
+          rel="noreferrer"
+          className="xiumi-link"
+        >
+          去秀米按关键词查找 <ExternalLink size={13} />
+        </a>
         <button className="button primary" disabled={busy} onClick={onGenerate}>
           {busy ? (
             <LoaderCircle className="spin" size={16} />
@@ -729,6 +929,8 @@ export default function Workspace() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [globalPrompt, setGlobalPrompt] = useState(defaultPrompt);
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState("");
   const selected = tasks.find((task) => task.id === selectedId);
@@ -741,6 +943,9 @@ export default function Workspace() {
       })
       .catch((error) => setToast(error.message))
       .finally(() => setLoading(false));
+    api<WorkspaceSettings>("/api/settings")
+      .then((settings) => setGlobalPrompt(settings.globalPrompt))
+      .catch((error) => setToast(error.message));
   }, []);
 
   function updateLocal(task: WorkflowTask) {
@@ -764,13 +969,18 @@ export default function Workspace() {
     updateLocal(result.task);
     return result.task;
   }
-  async function recommend() {
+  async function recommend(styleInstruction = "") {
     if (!selected) return;
+    const brief = typeof styleInstruction === "string" ? styleInstruction : "";
     setBusy(true);
     try {
       const result = await api<{ task: WorkflowTask; fallback: boolean }>(
         `/api/tasks/${selected.id}/recommend`,
-        { method: "POST" },
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ styleInstruction: brief }),
+        },
       );
       updateLocal(result.task);
       if (result.fallback) notify("AI 接口暂不可用，已展示内置推荐");
@@ -835,7 +1045,8 @@ export default function Workspace() {
       else window.open(result.backendUrl, "_blank");
       notify("已同步至公众号草稿箱，请在后台点击预览");
     } catch (e) {
-      if (previewWindow) previewWindow.location.href = "https://mp.weixin.qq.com/";
+      if (previewWindow)
+        previewWindow.location.href = "https://mp.weixin.qq.com/";
       notify(e instanceof Error ? e.message : "同步微信公众号失败");
     } finally {
       setBusy(false);
@@ -910,22 +1121,10 @@ export default function Workspace() {
           )}
         </div>
         <div className="sidebar-footer">
-          <button>
-            <Archive size={16} />
-            归档项目
-          </button>
-          <button>
+          <button onClick={() => setShowSettings(true)}>
             <Settings2 size={16} />
-            工作区设置
+            设置
           </button>
-          <div className="user">
-            <span>W</span>
-            <div>
-              <strong>内容工作室</strong>
-              <small>本地工作区</small>
-            </div>
-            <MoreHorizontal size={16} />
-          </div>
         </div>
       </aside>
       <section className="workspace">
@@ -957,6 +1156,17 @@ export default function Workspace() {
                   <Check size={13} />
                   已自动保存
                 </span>
+                {selected.document && (
+                  <button
+                    className="button ghost compact"
+                    onClick={() =>
+                      patchTask(selected.id, { status: "template" })
+                    }
+                  >
+                    <LayoutTemplate size={14} />
+                    更换模板
+                  </button>
+                )}
                 {selected.document && (
                   <button
                     className="button ghost compact"
@@ -999,6 +1209,7 @@ export default function Workspace() {
             onSelect={(id) =>
               patchTask(selected.id, { selectedTemplateId: id })
             }
+            onRematch={recommend}
             onGenerate={generate}
           />
         ) : selected.document ? (
@@ -1019,11 +1230,23 @@ export default function Workspace() {
       </section>
       {showUpload && (
         <UploadModal
+          initialPrompt={globalPrompt}
           onClose={() => setShowUpload(false)}
           onCreated={(task) => {
             updateLocal(task);
             setShowUpload(false);
             notify("素材解析完成");
+          }}
+        />
+      )}
+      {showSettings && (
+        <SettingsModal
+          prompt={globalPrompt}
+          onClose={() => setShowSettings(false)}
+          onSaved={(prompt) => {
+            setGlobalPrompt(prompt);
+            setShowSettings(false);
+            notify("全局提示词已保存");
           }}
         />
       )}
