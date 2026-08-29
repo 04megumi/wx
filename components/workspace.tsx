@@ -489,10 +489,12 @@ function TemplatePicker({
     () => setStyleBrief(task.styleInstruction || ""),
     [task.id, task.styleInstruction],
   );
+  const templateIds = new Set(templates.map((template) => template.id));
   const savedCandidates = task.recommendations.filter(
     (recommendation, index, all) =>
+      templateIds.has(recommendation.templateId) &&
       all.findIndex((item) => item.templateId === recommendation.templateId) ===
-      index,
+        index,
   );
   const candidates = [
     ...savedCandidates,
@@ -511,7 +513,13 @@ function TemplatePicker({
         xiumiKeywords: item.xiumiKeywords,
         referenceIds: item.referenceIds,
       })),
-  ].slice(0, 10);
+  ]
+    .filter(
+      (candidate, index, all) =>
+        all.findIndex((item) => item.templateId === candidate.templateId) ===
+        index,
+    )
+    .slice(0, 10);
   const selectedRecommendation = candidates.find(
     (candidate) => candidate.templateId === task.selectedTemplateId,
   );
